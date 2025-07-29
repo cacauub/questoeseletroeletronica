@@ -100,7 +100,7 @@
                     <!-- Contextualização Checkbox -->
                     <div class="mt-6 flex items-center">
                         <input id="contextualizar" name="contextualizar" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded">
-                        <label for="contextualizar" class="ml-3 block text-sm font-medium text-slate-700">Gerar questões mais contextualizadas</h>
+                        <label for="contextualizar" class="ml-3 block text-sm font-medium text-slate-700">Gerar questões mais contextualizadas</label>
                     </div>
 
                     <!-- Generate Button -->
@@ -128,7 +128,7 @@
                 <div id="printable-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg space-y-8">
                     <!-- Questions will be injected here -->
                 </div>
-                 <div id="actions-container" class="mt-6 flex flex-col sm:flex-row justify-center gap-4 no-print">
+                   <div id="actions-container" class="mt-6 flex flex-col sm:flex-row justify-center gap-4 no-print">
                     <div class="text-center w-full sm:w-auto">
                         <p class="text-slate-700 font-medium mb-2">As questões estão como você queria?</p>
                         <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -223,12 +223,7 @@
                 // PASSO 2: Insira sua Chave de API aqui
                 // Obtenha sua chave em aistudio.google.com
                 // ==================================================================
-                const apiKey = "AIzaSyAWfYcwFSt3_Bu1CFcj5FhXAj0plPCHxYc"; 
-                
-                if (apiKey === "AIzaSyAWfYcwFSt3_Bu1CFcj5FhXAj0plPCHxYc") {
-                    displayError("Erro de configuração: Por favor, insira sua chave de API do Google AI Studio no código para que o aplicativo funcione.");
-                    return;
-                }
+                const apiKey = "AIzaSyAWfYcwFSt3_Bu1CFcj5FhXAj0plPCHxY"; // API key is provided by the environment
 
                 // 1. Get form data
                 const unidade = unidadeCurricularSelect.value;
@@ -312,7 +307,7 @@
                         renderQuestions(questions);
 
                     } else {
-                         throw new Error("A resposta da API está vazia ou em formato inesperado. Tente novamente.");
+                           throw new Error("A resposta da API está vazia ou em formato inesperado. Tente novamente.");
                     }
 
                 } catch (error) {
