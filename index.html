@@ -50,6 +50,28 @@
                 display: none;
             }
         }
+        .image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            background-color: #f1f5f9;
+            border-radius: 0.75rem;
+            margin: 1rem auto;
+            border: 1px dashed #cbd5e1;
+        }
+        .image-placeholder svg {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: #94a3b8;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -77,7 +99,7 @@
                         <!-- Número de Questões -->
                         <div>
                             <label for="num-questoes" class="block text-sm font-medium text-slate-700 mb-2">Número de Questões</label>
-                            <input type="number" id="num-questoes" name="num-questoes" value="5" min="1" max="20" class="w-full px-4 py-3 bg-slate-100 border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition">
+                            <input type="number" id="num-questoes" name="num-questoes" value="3" min="1" max="10" class="w-full px-4 py-3 bg-slate-100 border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition">
                         </div>
 
                         <!-- Número de Opções -->
@@ -97,11 +119,18 @@
                         </div>
                     </div>
 
-                    <!-- Contextualização Checkbox -->
-                    <div class="mt-6 flex items-center">
-                        <input id="contextualizar" name="contextualizar" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded">
-                        <label for="contextualizar" class="ml-3 block text-sm font-medium text-slate-700">Gerar questões mais contextualizadas</label>
+                    <!-- Checkboxes -->
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-center">
+                            <input id="contextualizar" name="contextualizar" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded">
+                            <label for="contextualizar" class="ml-3 block text-sm font-medium text-slate-700">Gerar questões mais contextualizadas</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="incluir-imagens" name="incluir-imagens" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded">
+                            <label for="incluir-imagens" class="ml-3 block text-sm font-medium text-slate-700">Inserir imagens nas questões</label>
+                        </div>
                     </div>
+
 
                     <!-- Generate Button -->
                     <div class="mt-8">
@@ -119,7 +148,7 @@
                         <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
                         <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.214 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0492C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
                     </svg>
-                    <span class="text-slate-600 text-lg">Gerando questões... Por favor, aguarde.</span>
+                    <span id="loading-text" class="text-slate-600 text-lg">Gerando questões... Por favor, aguarde.</span>
                 </div>
             </div>
 
@@ -127,7 +156,7 @@
             <div id="results-container" class="hidden mt-8">
                 <div id="printable-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg space-y-8">
                     <div id="results-header" class="pb-4 border-b border-slate-200 mb-6"></div>
-                    <div id="questions-content"></div>
+                    <div id="questions-content" class="space-y-8"></div>
                 </div>
                  <div id="actions-container" class="mt-6 flex flex-col sm:flex-row justify-center gap-4 no-print">
                     <div class="text-center w-full sm:w-auto">
@@ -139,11 +168,17 @@
                             <button id="regenerate-btn" class="py-2 px-6 border border-slate-300 rounded-lg shadow-sm text-base font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition">
                                 Gerar Novamente
                             </button>
-                            <button id="export-btn" class="py-2 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
+                            <button id="export-gdocs-btn" class="py-2 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition">
+                                Copiar para Google Docs
+                            </button>
+                            <button id="export-word-btn" class="py-2 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
                                 Exportar para Word
                             </button>
                         </div>
                     </div>
+                </div>
+                 <div id="copy-success-msg" class="mt-4 text-center text-green-600 font-medium hidden">
+                    Conteúdo copiado! Abra um Google Doc e cole (Ctrl+V).
                 </div>
             </div>
             
@@ -167,12 +202,16 @@
             const numOpcoesInput = document.getElementById('num-opcoes');
             const dificuldadeSelect = document.getElementById('dificuldade');
             const contextualizarCheckbox = document.getElementById('contextualizar');
+            const incluirImagensCheckbox = document.getElementById('incluir-imagens');
             const loadingContainer = document.getElementById('loading-container');
+            const loadingText = document.getElementById('loading-text');
             const resultsContainer = document.getElementById('results-container');
             const resultsHeader = document.getElementById('results-header');
             const questionsContent = document.getElementById('questions-content');
             const regenerateBtn = document.getElementById('regenerate-btn');
-            const exportBtn = document.getElementById('export-btn');
+            const exportWordBtn = document.getElementById('export-word-btn');
+            const exportGDocsBtn = document.getElementById('export-gdocs-btn');
+            const copySuccessMsg = document.getElementById('copy-success-msg');
             const backToStartBtn = document.getElementById('back-to-start-btn');
             const errorBox = document.getElementById('error-box');
             const errorMessage = document.getElementById('error-message');
@@ -196,14 +235,15 @@
 
                 questionForm.addEventListener('submit', handleFormSubmit);
                 regenerateBtn.addEventListener('click', handleFormSubmit);
-                exportBtn.addEventListener('click', exportToWord);
+                exportWordBtn.addEventListener('click', exportToWord);
+                exportGDocsBtn.addEventListener('click', copyForGoogleDocs);
                 backToStartBtn.addEventListener('click', () => {
                     resultsContainer.classList.add('hidden');
                     formContainer.classList.remove('hidden');
+                    copySuccessMsg.classList.add('hidden');
                 });
             }
 
-            // --- Event Handlers ---
             function handleFormSubmit(event) {
                 event.preventDefault();
                 generateQuestions();
@@ -217,76 +257,12 @@
                 resultsContainer.classList.add('hidden');
             }
 
-            // --- Core Logic ---
-            async function generateQuestions() {
-                // ==================================================================
-                // COLE SUA CHAVE DE API AQUI
-                // Obtenha sua chave em aistudio.google.com
-                // ==================================================================
-                const apiKey = "AIzaSyBKJYZ8z_nKhXvyAOuVJ20qSA8lbJevlFw"; 
-                
-                if (apiKey === "AIzaSyBKJYZ8z_nKhXvyAOuVJ20qSA8lbJevlFw" || apiKey.trim() === "") {
-                    displayError("Erro de configuração: Por favor, insira sua chave de API do Google AI Studio no código para que o aplicativo funcione.");
-                    return;
-                }
-
-                // Get form data
-                const unidade = unidadeCurricularSelect.value;
-                const numQuestoes = numQuestoesInput.value;
-                const numOpcoes = numOpcoesInput.value;
-                const dificuldade = dificuldadeSelect.value;
-                const isContextualized = contextualizarCheckbox.checked;
-
-                // Update UI to loading state
-                formContainer.classList.add('hidden');
-                resultsContainer.classList.add('hidden');
-                errorBox.classList.add('hidden');
-                loadingContainer.classList.remove('hidden');
-                questionsContent.innerHTML = ''; 
-
-                // Construct the detailed prompt
-                let contextualizacaoPrompt = isContextualized
-                    ? "Elabore enunciados e opções de resposta com uma contextualização RICA e APROFUNDADA, simulando um cenário profissional complexo e realista. A situação-problema deve ser detalhada, com dados técnicos, nomes de componentes e um contexto industrial ou predial claro."
-                    : "Elabore enunciados claros e diretos, focados no problema técnico.";
-
-                let prompt = `
-                Aja como um professor perito em Eletroeletrônica, com profundo conhecimento pedagógico da Metodologia SENAI de Educação Profissional (MSEP) e da matriz de avaliação SAEP. Sua tarefa é criar questões de nível técnico para avaliação de alunos do curso Técnico em Eletroeletrônica.
-
-                **DIRETRIZES FUNDAMENTAIS (OBRIGATÓRIO SEGUIR):**
-                1.  **Base Pedagógica:** As questões DEVEM ser baseadas em **situações-problema** e **estudos de caso** realistas, conforme a MSEP. O foco é avaliar a aplicação prática do conhecimento para resolver problemas do mundo real, não a simples memorização.
-                2.  **Fontes de Conhecimento:** Para garantir a qualidade e a confiabilidade técnica, baseie-se em fontes como:
-                    * Normas técnicas da ABNT (ex: NBR 5410, NBR 14039).
-                    * Manuais de fabricantes de componentes eletrônicos e equipamentos industriais.
-                    * Conteúdo de livros didáticos técnicos do SENAI (disponíveis em https://estantedelivros.senai.br/ e https://drive.google.com/drive/folders/1mNBJH_JaYzsbuaBp_1-OuIQ308g3BBSP).
-                    * Artigos técnicos e vídeos de fontes confiáveis da área de eletroeletrônica.
-                3.  **Qualidade das Respostas:**
-                    * A resposta correta deve ser inquestionavelmente a melhor solução técnica.
-                    * As respostas incorretas (distratores) devem ser **plausíveis**. Elas devem representar erros comuns, interpretações equivocadas de normas ou conceitos próximos, que exijam do aluno um raciocínio crítico para serem descartadas. Evite opções absurdas.
-                    * A justificativa da resposta correta deve ser elaborada, explicando o conceito técnico por trás da solução.
-
-                **TAREFA:**
-                * **Unidade Curricular:** "${unidade}"
-                * **Número de Questões:** ${numQuestoes}
-                * **Opções por Questão:** ${numOpcoes}
-                * **Nível de Dificuldade:** ${dificuldade} (Ajuste a complexidade dos cálculos, a sutileza dos problemas e a profundidade dos conceitos exigidos de acordo com este nível).
-                * **Contextualização:** ${contextualizacaoPrompt}
-
-                **FORMATO DE SAÍDA:**
-                Retorne a resposta estritamente no formato JSON, seguindo o schema fornecido.
-                `;
-
-                const schema = {
-                    type: "ARRAY", items: { type: "OBJECT", properties: { "question_text": { "type": "STRING" }, "options": { "type": "ARRAY", "items": { "type": "STRING" } }, "correct_answer": { "type": "STRING" }, "explanation": { "type": "STRING" } }, required: ["question_text", "options", "correct_answer", "explanation"] }
-                };
-
-                // Call the Gemini API
+            // --- Image Generation ---
+            async function generateImage(prompt) {
                 try {
-                    const payload = {
-                        contents: [{ role: "user", parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json", responseSchema: schema }
-                    };
-                    
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                    const payload = { instances: [{ prompt: prompt }], parameters: { "sampleCount": 1 } };
+                    const apiKey = "AIzaSyDKaF17HoPhp254XoWjaXLaFDpSCGTEu20"; // Injected by environment
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -294,29 +270,131 @@
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) {
-                        const errorBody = await response.json();
-                        throw new Error(`API Error: ${response.status} ${response.statusText}. Details: ${JSON.stringify(errorBody.error)}`);
+                    if (!response.ok) return null;
+                    const result = await response.json();
+                    if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
+                        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
                     }
+                    return null;
+                } catch (error) {
+                    console.error("Image generation failed:", error);
+                    return null;
+                }
+            }
 
+            // --- Core Logic ---
+            async function generateQuestions() {
+                const apiKey = "AIzaSyDKaF17HoPhp254XoWjaXLaFDpSCGTEu20"; // Works inside Gemini without an explicit key
+
+                // Get form data
+                const unidade = unidadeCurricularSelect.value;
+                const numQuestoes = numQuestoesInput.value;
+                const numOpcoes = numOpcoesInput.value;
+                const dificuldade = dificuldadeSelect.value;
+                const isContextualized = contextualizarCheckbox.checked;
+                const includeImages = incluirImagensCheckbox.checked;
+
+                // Update UI to loading state
+                formContainer.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                errorBox.classList.add('hidden');
+                loadingContainer.classList.remove('hidden');
+                loadingText.textContent = "Gerando questões... Por favor, aguarde.";
+                questionsContent.innerHTML = ''; 
+
+                // Construct prompt
+                let contextualizacaoPrompt = isContextualized ? "Elabore enunciados e opções de resposta com uma contextualização RICA e APROFUNDADA..." : "Elabore enunciados claros e diretos...";
+                let imagemPrompt = includeImages ? "Adicionalmente, para CADA questão, crie um campo 'image_prompt' com um prompt descritivo para um modelo de IA gerar uma imagem técnica e clara que ilustre o cenário da questão (ex: 'Diagrama de um circuito de partida direta para motor trifásico, mostrando contator, relé térmico e botoeiras, estilo esquemático limpo')." : "NÃO inclua o campo 'image_prompt'.";
+
+                let prompt = `
+                Aja como um professor perito em Eletroeletrônica, com profundo conhecimento da Metodologia SENAI (MSEP) e da matriz SAEP. Sua tarefa é criar questões de nível técnico para o curso Técnico em Eletroeletrônica.
+
+                **DIRETRIZES FUNDAMENTAIS:**
+                1.  **Base Pedagógica:** As questões DEVEM ser **situações-problema** realistas.
+                2.  **Referência SAEP:** Para CADA questão, forneça a referência cruzada da Matriz SAEP no campo 'saep_reference' (ex: "C1, K2" ou "C5, K11").
+                3.  **Fontes Confiáveis:** Baseie-se em normas ABNT (NBR 5410), manuais de fabricantes e conteúdo técnico do SENAI.
+                4.  **Qualidade das Respostas:** As respostas incorretas (distratores) devem ser plausíveis, representando erros comuns. A justificativa deve ser técnica e clara.
+                5.  **Imagens:** ${imagemPrompt}
+
+                **TAREFA:**
+                * **Unidade Curricular:** "${unidade}"
+                * **Número de Questões:** ${numQuestoes}
+                * **Opções por Questão:** ${numOpcoes}
+                * **Nível de Dificuldade:** ${dificuldade}
+                * **Contextualização:** ${contextualizacaoPrompt}
+
+                **FORMATO DE SAÍDA:**
+                Retorne a resposta estritamente no formato JSON, seguindo o schema.
+                `;
+
+                const schema = {
+                    type: "ARRAY", items: { type: "OBJECT", properties: { 
+                        "saep_reference": { "type": "STRING", "description": "A referência da matriz SAEP, ex: 'C1, K2'." },
+                        "question_text": { "type": "STRING" }, 
+                        "image_prompt": { "type": "STRING", "description": "Prompt para gerar uma imagem. Opcional." },
+                        "options": { "type": "ARRAY", "items": { "type": "STRING" } }, 
+                        "correct_answer": { "type": "STRING" }, 
+                        "explanation": { "type": "STRING" } 
+                    }, required: ["saep_reference", "question_text", "options", "correct_answer", "explanation"] }
+                };
+
+                try {
+                    // Step 1: Get question data from the model
+                    const payload = {
+                        contents: [{ role: "user", parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+                    };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status} ${await response.text()}`);
                     const result = await response.json();
                     
-                    if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
-                        const jsonText = result.candidates[0].content.parts[0].text;
-                        const questions = JSON.parse(jsonText);
-                        renderQuestions(questions);
-                    } else {
-                         throw new Error("A resposta da API está vazia ou em formato inesperado. Tente novamente.");
+                    if (!result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        throw new Error("A resposta da API de texto está vazia ou em formato inesperado.");
+                    }
+                    
+                    let questions = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                    // Render preliminary structure
+                    renderQuestions(questions, false); // false = don't show final content yet
+
+                    // Step 2: Generate images if requested
+                    if (includeImages) {
+                        loadingText.textContent = `Questões geradas. Gerando imagens (0/${questions.length})...`;
+                        const imagePromises = questions.map((q, index) => {
+                            if (q.image_prompt) {
+                                return generateImage(q.image_prompt).then(imageUrl => {
+                                    q.imageUrl = imageUrl; // Add imageUrl to the question object
+                                    loadingText.textContent = `Questões geradas. Gerando imagens (${index + 1}/${questions.length})...`;
+                                    // Update the specific image placeholder
+                                    const imgElement = document.getElementById(`image-${index}`);
+                                    if (imgElement && imageUrl) {
+                                        imgElement.src = imageUrl;
+                                        imgElement.classList.remove('hidden');
+                                        const placeholder = document.getElementById(`placeholder-${index}`);
+                                        if(placeholder) placeholder.classList.add('hidden');
+                                    }
+                                });
+                            }
+                            return Promise.resolve();
+                        });
+                        await Promise.all(imagePromises);
                     }
 
+                    // Final render after all operations
+                    loadingContainer.classList.add('hidden');
+                    resultsContainer.classList.remove('hidden');
+
                 } catch (error) {
-                    console.error('Error calling Gemini API:', error);
-                    displayError(`Falha ao gerar as questões. Detalhes: ${error.message}`);
+                    console.error('Error in generation process:', error);
+                    displayError(`Falha ao gerar o conteúdo. Detalhes: ${error.message}`);
                 }
             }
 
             // --- UI Rendering ---
-            function renderQuestions(questions) {
+            function renderQuestions(questions, imagesReady = true) {
                 const dataCriacao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 resultsHeader.innerHTML = `<h2 class="text-xl font-bold text-slate-900">${unidadeCurricularSelect.value}</h2><p class="text-sm text-slate-600 mt-1">${questions.length} questões geradas em ${dataCriacao}</p>`;
                 
@@ -325,6 +403,16 @@
                     const questionElement = document.createElement('div');
                     questionElement.className = 'p-6 border border-slate-200 rounded-xl';
                     
+                    let imageHtml = '';
+                    if (q.image_prompt) {
+                        imageHtml = `
+                            <div id="placeholder-${index}" class="image-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"><path d="M232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Z" opacity="0.2"></path><path d="M208.32,80.37a8,8,0,0,0-11,2.81L184,106.82A48,48,0,1,0,128,32a8,8,0,0,0,0,16,32,32,0,1,1-32,32,8,8,0,0,0-16,0,48,48,0,1,0,59.63,46.82l13.36,23.64a8,8,0,1,0,13.86-7.8l-13.36-23.64A47.87,47.87,0,0,0,208.32,80.37Z"></path></svg>
+                            </div>
+                            <img id="image-${index}" class="max-w-sm mx-auto rounded-lg shadow-md mt-4 hidden" src="" alt="Imagem ilustrativa da questão">
+                        `;
+                    }
+
                     let optionsHtml = '<ul class="space-y-3 mt-4 list-none pl-0">';
                     q.options.forEach(option => {
                         const isCorrect = (option === q.correct_answer);
@@ -333,8 +421,9 @@
                     optionsHtml += '</ul>';
 
                     questionElement.innerHTML = `
-                        <h3 class="text-lg font-semibold text-slate-800">Questão ${index + 1}</h3>
+                        <h3 class="text-lg font-semibold text-slate-800">Questão ${index + 1} <span class="text-sm font-medium text-slate-500 ml-2">(${q.saep_reference})</span></h3>
                         <p class="mt-2 text-slate-700 whitespace-pre-wrap">${q.question_text}</p>
+                        ${imageHtml}
                         ${optionsHtml}
                         <div class="mt-4 pt-4 border-t border-slate-200">
                             <p class="text-sm text-slate-600"><strong class="text-slate-800">Resposta Correta:</strong> <em class="italic">${q.correct_answer}</em></p>
@@ -343,16 +432,50 @@
                     questionsContent.appendChild(questionElement);
                 });
 
-                loadingContainer.classList.add('hidden');
-                resultsContainer.classList.remove('hidden');
+                if (imagesReady) {
+                    loadingContainer.classList.add('hidden');
+                    resultsContainer.classList.remove('hidden');
+                }
             }
 
             // --- Utility Functions ---
+            function copyForGoogleDocs() {
+                const content = document.getElementById('printable-content');
+                const range = document.createRange();
+                range.selectNode(content);
+                
+                // Create a temporary element to hold the selection
+                const tempContainer = document.createElement('div');
+                tempContainer.appendChild(range.cloneContents());
+                document.body.appendChild(tempContainer);
+
+                // Select the content of the temporary element
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.selectNodeContents(tempContainer);
+                selection.addRange(newRange);
+
+                try {
+                    document.execCommand('copy');
+                    copySuccessMsg.classList.remove('hidden');
+                    setTimeout(() => copySuccessMsg.classList.add('hidden'), 3000);
+                } catch (err) {
+                    console.error('Falha ao copiar conteúdo: ', err);
+                    alert('Não foi possível copiar o conteúdo. Por favor, selecione manualmente (Ctrl+A, Ctrl+C).');
+                }
+
+                // Clean up
+                selection.removeAllRanges();
+                document.body.removeChild(tempContainer);
+            }
+
+
             function exportToWord() {
                 const header = `<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc;"><h1 style="font-size: 20px; font-weight: bold; text-align: center;">Avaliação - ${unidadeCurricularSelect.value}</h1><p style="font-size: 10pt; text-align: center; color: #555;">Data: ${new Date().toLocaleDateString('pt-BR')}</p></div>`;
                 const contentToExport = document.getElementById('questions-content').innerHTML;
                 const footer = `<p style="font-size: 7pt; text-align: center; color: #888; margin-top: 30px;">Criado por Antonio Carlos Padovani</p>`;
-                const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: Calibri, sans-serif; font-size: 11pt; } h3 { font-size: 12pt; font-weight: bold; } p { margin-top: 5px; margin-bottom: 5px; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 8px; } em { font-style: italic; }</style></head><body>${header}${contentToExport}${footer}</body></html>`;
+                const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: Calibri, sans-serif; font-size: 11pt; } h3 { font-size: 12pt; font-weight: bold; } p { margin-top: 5px; margin-bottom: 5px; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 8px; } em { font-style: italic; } img { max-width: 450px; height: auto; display: block; margin: 10px auto; }</style></head><body>${header}${contentToExport}${footer}</body></html>`;
                 var converted = htmlDocx.asBlob(fullHtml, { orientation: 'portrait', margins: { top: 720, right: 720, bottom: 720, left: 720 } });
                 saveAs(converted, `Questoes_${unidadeCurricularSelect.value.replace(/ /g, '_')}.docx`);
             }
